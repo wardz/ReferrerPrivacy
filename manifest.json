@@ -1,0 +1,21 @@
+{
+    "name": "ReferrerPrivacy",
+    "version": "1.0.0",
+    "description": "Blocks referrers for cross origin (third party) requests.",
+    "manifest_version": 3,
+    "background": {
+      "service_worker": "service_worker.js"
+    },
+    "host_permissions": [
+      "<all_urls>"
+    ],
+    "permissions": [
+      "declarativeNetRequest",
+      "scripting",
+      "storage"
+    ],
+    "icons": {
+      "128": "icons/icon128.png"
+    },
+    "options_page": "options.html"
+}
