@@ -7,15 +7,15 @@ try {
     if (new URL(document.referrer).origin !== window.location.origin) {
         const overrideReferrer = (target) => {
             try {
-                Reflect.defineProperty(target, 'referrer', {
-                    ...Reflect.getOwnPropertyDescriptor(target, 'referrer'),
+                Reflect.defineProperty(target.Document.prototype, 'referrer', {
+                    ...Reflect.getOwnPropertyDescriptor(target.Document.prototype, 'referrer'),
                     get: () => '',
                 });
             } catch {} // incase CORS iframe error, saves a lot of URL checking
         };
 
         // Set 'document.referrer' in current window to empty string
-        overrideReferrer(Document.prototype);
+        overrideReferrer(window);
 
         // Set 'document.referrer' in iframe, frame & object contentWindow to empty string
         [HTMLIFrameElement, HTMLObjectElement, HTMLFrameElement].forEach((element) => {
@@ -25,7 +25,7 @@ try {
                 ...windowPropDescriptor,
                 get() {
                     const contentWindow = windowPropDescriptor.get.call(this);
-                    overrideReferrer(contentWindow.Document.prototype);
+                    overrideReferrer(contentWindow);
 
                     return contentWindow;
                 },
@@ -36,7 +36,7 @@ try {
         window.open = new Proxy(window.open, {
             apply(target, thisArg, argumentsList) {
                 const contentWindow = target.apply(thisArg, argumentsList);
-                overrideReferrer(contentWindow.Document.prototype);
+                overrideReferrer(contentWindow);
 
                 return contentWindow;
             },
