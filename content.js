@@ -41,5 +41,16 @@ try {
                 return contentWindow;
             },
         });
+
+        // set 'document.referrer' in window.frames to empty string
+        const origWindowFrames = window.frames;
+        window.frames = new Proxy(window.frames, {
+            get(target, prop) {
+                const contentWindow = Reflect.get(origWindowFrames, prop);
+                overrideReferrer(contentWindow);
+
+                return contentWindow;
+            },
+        });
     }
 } catch {}
