@@ -5,7 +5,7 @@ const defaultConfig = {
     excludedRequestDomains: [
         'bin.bnbstatic.com', // Binance App
         'www.redditstatic.com', // Reddit fonts
-        'www.gstatic.com', // Google Messenger
+        'www.gstatic.com', // Google Messages
         'cdn.embedly.com', // Reddit iframe embeds
         'static.crunchyroll.com', // Crunchyroll player embeds
         'read.amazon.com', // Kindle Reader
@@ -29,8 +29,8 @@ chrome.runtime.onInstalled.addListener(async () => {
         // matchAboutBlank: true,
         allFrames: true,
         excludeMatches: [
-            ...config.excludedRequestDomains.map((domain) => `*://${domain}/*`),
-            ...config.excludedInitiatorDomains.map((domain) => `*://${domain}/*`),
+            ...config.excludedRequestDomains.map((domain) => `*://*.${domain}/*`),
+            ...config.excludedInitiatorDomains.map((domain) => `*://*.${domain}/*`),
         ],
     }]);
 
