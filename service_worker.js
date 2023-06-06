@@ -1,3 +1,5 @@
+const browser = this.browser || this.chrome;
+
 // TODO: per-site basis?
 const defaultConfig = {
     referrerResourceTypes: ['main_frame', 'sub_frame', 'stylesheet', 'script', 'font', 'ping', 'object', 'xmlhttprequest', 'other'],
@@ -14,13 +16,13 @@ const defaultConfig = {
     ],
 };
 
-chrome.runtime.onInstalled.addListener(async () => {
-    const existingConfig = await chrome.storage.sync.get(null);
+browser.runtime.onInstalled.addListener(async () => {
+    const existingConfig = await browser.storage.sync.get(null);
     const config = { ...defaultConfig, ...existingConfig };
-    await chrome.storage.sync.set(config);
+    await browser.storage.sync.set(config);
 
     // Register content.js for modifying 'document.referrer'
-    chrome.scripting.registerContentScripts([{
+    browser.scripting.registerContentScripts([{
         id: 'document_referrer_overwrite',
         world: 'MAIN',
         js: ['content.js'],
@@ -36,7 +38,7 @@ chrome.runtime.onInstalled.addListener(async () => {
     }]);
 
     // Register header modification rules
-    chrome.declarativeNetRequest.updateDynamicRules({
+    browser.declarativeNetRequest.updateDynamicRules({
         removeRuleIds: [1, 2],
 
         addRules: [
