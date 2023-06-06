@@ -1,8 +1,3 @@
-// TODO: fix iframe window bypass:
-// window[0].Reflect.getOwnPropertyDescriptor(window[0].Document.prototype, "referrer").get.call(document);
-// Although might not be possible to fix synchronously without doing something stupid like hooking every dom insert node call.
-// Probably better off blocking the URL for the js script if you see some analytics lib abusing this.
-
 try {
     if (new URL(document.referrer).origin !== window.location.origin) {
         const overrideReferrer = (target) => {
@@ -11,7 +6,7 @@ try {
                     ...Reflect.getOwnPropertyDescriptor(target.Document.prototype, 'referrer'),
                     get: () => '',
                 });
-            } catch {} // incase CORS iframe error, saves a lot of URL checking
+            } catch {} // suppress any CORS iframe errors
         };
 
         // Set 'document.referrer' in current window to empty string
