@@ -1,15 +1,16 @@
+// TODO: per-site basis?
 const defaultConfig = {
     referrerResourceTypes: ['main_frame', 'sub_frame', 'stylesheet', 'script', 'font', 'ping', 'object', 'xmlhttprequest', 'other'],
     originResourceTypes: ['main_frame', 'sub_frame', 'stylesheet', 'script', 'font', 'ping'],
-    excludedInitiatorDomains: ['read.amazon.com'],
+    excludedInitiatorDomains: ['read.amazon.com', 'icloud.com', 'messages.google.com'],
     excludedRequestDomains: [
-        'bin.bnbstatic.com', // Binance App
-        'www.redditstatic.com', // Reddit fonts
-        'www.gstatic.com', // Google Messages
+        'bin.bnbstatic.com', // Binance SPA
+        'redditstatic.com', // Reddit fonts
         'cdn.embedly.com', // Reddit iframe embeds
         'static.crunchyroll.com', // Crunchyroll player embeds
-        'read.amazon.com', // Kindle Reader
         'codepen.io', // Codepen iframe embeds
+        'cdpn.io', // Codepen iframe embeds
+        'youtube.googleapis.com', // Google Photos fullscreen videos
     ],
 };
 
