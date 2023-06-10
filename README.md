@@ -11,7 +11,7 @@ Every time you visit a website that loads third-party CDN content like fonts, st
 
 This allows the CDN to easily track your browsing history over time. Let's say you visit `buy-paint-example.com` and that site embeds some custom fonts from Bootstrap aka Twitter's CDN. Twitter now automatically knows you visited `buy-paint-example.com` through the referrer. With this extension, the custom content will still be loaded, but the CDN won't be able to tell which website you're originating from since the referrer is blocked.
 
-It also blocks sending the origin website when clicking outbound site links. For example, normally clicking `example.com` on a Search Engine result would tell `example.com` that you came from `our-search-engine.com`. With this extension it will prevent that and look like a direct visit instead.
+It also blocks sending the origin website when clicking outbound site links. For example, normally clicking `example.com` on a Search Engine result would tell `example.com` that you came from `your-search-engine.com`. With this extension it will prevent that and look like a direct visit instead.
 
 ## Install
 
