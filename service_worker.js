@@ -21,8 +21,9 @@ browser.runtime.onInstalled.addListener(async () => {
     const config = { ...defaultConfig, ...existingConfig };
     await browser.storage.sync.set(config);
 
-    // Register content.js for modifying 'document.referrer'
-    browser.scripting.registerContentScripts([{
+    // Register or update content.js for modifying 'document.referrer'
+    const script = await browser.scripting.getRegisteredContentScripts();
+    browser.scripting[script.length === 0 ? 'registerContentScripts' : 'updateContentScripts']([{
         id: 'document_referrer_overwrite',
         world: 'MAIN',
         js: ['content.js'],
@@ -37,7 +38,7 @@ browser.runtime.onInstalled.addListener(async () => {
         ],
     }]);
 
-    // Register header modification rules
+    // Register or update header modification rules
     browser.declarativeNetRequest.updateDynamicRules({
         removeRuleIds: [1, 2],
 
