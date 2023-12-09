@@ -1,6 +1,6 @@
 const browser = this.browser || this.chrome;
 
-// TODO: per-site basis?
+// TODO: per-site basis
 const defaultConfig = {
     referrerResourceTypes: ['main_frame', 'sub_frame', 'stylesheet', 'script', 'font', 'ping', 'object', 'xmlhttprequest', 'other'],
     originResourceTypes: ['main_frame', 'sub_frame', 'stylesheet', 'script', 'font', 'ping'],
@@ -18,7 +18,7 @@ const defaultConfig = {
 
 browser.runtime.onInstalled.addListener(async () => {
     const existingConfig = await browser.storage.sync.get(null);
-    const config = { ...defaultConfig, ...existingConfig };
+    const config = { ...defaultConfig, ...existingConfig }; // WARN: not a deepmerge
     await browser.storage.sync.set(config);
 
     // Register or update content.js for modifying 'document.referrer'

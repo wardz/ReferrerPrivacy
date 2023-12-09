@@ -11,11 +11,9 @@
     ],
     "permissions": [
       "declarativeNetRequest",
-      "scripting",
-      "storage"
+      "scripting"
     ],
     "icons": {
       "128": "icons/icon128.png"
-    },
-    "options_page": "options.html"
+    }
 }

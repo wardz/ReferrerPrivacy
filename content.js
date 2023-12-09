@@ -1,12 +1,12 @@
 try {
-    if (new URL(document.referrer).origin !== window.location.origin) {
+    if (new URL(document.referrer).origin !== window.location.origin) { // Throws TypeError on bad URLs
         const overrideReferrer = (target) => {
             try {
                 Reflect.defineProperty(target.Document.prototype, 'referrer', {
                     ...Reflect.getOwnPropertyDescriptor(target.Document.prototype, 'referrer'),
                     get: () => '',
                 });
-            } catch {} // suppress any CORS iframe errors
+            } catch {} // Suppress any CORS iframe errors
         };
 
         // Set 'document.referrer' in current window to empty string
@@ -27,7 +27,7 @@ try {
             });
         });
 
-        // set 'document.referrer' in window.open to empty string
+        // Set 'document.referrer' in window.open to empty string
         window.open = new Proxy(window.open, {
             apply(target, thisArg, argumentsList) {
                 const contentWindow = target.apply(thisArg, argumentsList);
@@ -37,7 +37,7 @@ try {
             },
         });
 
-        // set 'document.referrer' in window.frames to empty string
+        // Set 'document.referrer' in window.frames to empty string
         const origWindowFrames = window.frames;
         window.frames = new Proxy(window.frames, {
             get(target, prop) {
