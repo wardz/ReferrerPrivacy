@@ -1,36 +1,58 @@
 const browser = this.browser || this.chrome;
 
-// TODO: per-site basis
+// TODO: per-site basis (reddit.com -> exclude redditstatic.com)
 const defaultConfig = {
-    referrerResourceTypes: ['main_frame', 'sub_frame', 'stylesheet', 'script', 'font', 'ping', 'object', 'xmlhttprequest', 'other'],
-    originResourceTypes: ['main_frame', 'sub_frame', 'stylesheet', 'script', 'font', 'ping'],
-    excludedInitiatorDomains: ['read.amazon.com', 'icloud.com', 'messages.google.com'],
+
+    // Exclude all requests on a domain
+    excludedInitiatorDomains: [
+        'read.amazon.com',
+        'icloud.com',
+        'messages.google.com',
+    ],
+
+    // Exclude a specific request
     excludedRequestDomains: [
-        'bin.bnbstatic.com', // Binance SPA
-        'redditstatic.com', // Reddit fonts
-        'cdn.embedly.com', // Reddit iframe embeds
-        'static.crunchyroll.com', // Crunchyroll player embeds
-        'codepen.io', // Codepen iframe embeds
-        'cdpn.io', // Codepen iframe embeds
-        'youtube.googleapis.com', // Google Photos fullscreen videos
+        'bin.bnbstatic.com',
+        'redditstatic.com',
+        'cdn.embedly.com',
+        'static.crunchyroll.com',
+        'codepen.io',
+        'cdpn.io',
+        'youtube.googleapis.com',
+    ],
+
+    // Selected resource types for filtering origin header
+    originResourceTypes: ['font'],
+
+    // Selected resource types for filtering referrer header
+    referrerResourceTypes: [
+        'main_frame',
+        'sub_frame',
+        'stylesheet',
+        'script',
+        'font',
+        'ping',
+        'beacon',
+        'xmlhttprequest',
+        'speculative',
+        'other',
     ],
 };
 
 browser.runtime.onInstalled.addListener(async () => {
     const existingConfig = await browser.storage.sync.get(null);
-    const config = { ...defaultConfig, ...existingConfig }; // WARN: not a deepmerge
+    const config = { ...defaultConfig, ...existingConfig }; // note: not a deepmerge
     await browser.storage.sync.set(config);
 
-    // Register or update content.js for modifying 'document.referrer'
+    // Register or update content.js for modifying 'document.referrer' property
     const script = await browser.scripting.getRegisteredContentScripts();
     browser.scripting[script.length === 0 ? 'registerContentScripts' : 'updateContentScripts']([{
         id: 'document_referrer_overwrite',
-        world: 'MAIN',
         js: ['content.js'],
+        world: 'MAIN',
         runAt: 'document_start',
         matches: ['<all_urls>'],
         matchOriginAsFallback: true,
-        // matchAboutBlank: true,
         allFrames: true,
         excludeMatches: [
             ...config.excludedRequestDomains.map((domain) => `*://*.${domain}/*`),
@@ -65,7 +87,7 @@ browser.runtime.onInstalled.addListener(async () => {
                 },
                 condition: {
                     domainType: 'thirdParty',
-                    requestMethods: ['get', 'head'],
+                    requestMethods: ['get'],
                     resourceTypes: config.originResourceTypes,
                     excludedInitiatorDomains: config.excludedInitiatorDomains,
                     excludedRequestDomains: config.excludedRequestDomains,
