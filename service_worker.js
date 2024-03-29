@@ -2,7 +2,6 @@ const browser = this.browser || this.chrome;
 
 // TODO: per-site basis (reddit.com -> exclude redditstatic.com)
 const defaultConfig = {
-
     // Exclude all requests on a domain
     excludedInitiatorDomains: [
         'read.amazon.com',
@@ -32,9 +31,7 @@ const defaultConfig = {
         'script',
         'font',
         'ping',
-        'beacon',
         'xmlhttprequest',
-        'speculative',
         'other',
     ],
 };
