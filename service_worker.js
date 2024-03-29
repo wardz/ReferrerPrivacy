@@ -1,6 +1,6 @@
 const browser = this.browser || this.chrome;
 
-// TODO: per-site basis (reddit.com -> exclude redditstatic.com)
+// TODO: per-site basis rules
 const defaultConfig = {
     // Exclude all requests on a domain
     excludedInitiatorDomains: [
@@ -27,12 +27,11 @@ const defaultConfig = {
     referrerResourceTypes: [
         'main_frame',
         'sub_frame',
+        'object',
         'stylesheet',
         'script',
         'font',
-        'ping',
         'xmlhttprequest',
-        'other',
     ],
 };
 
@@ -41,22 +40,22 @@ browser.runtime.onInstalled.addListener(async () => {
     const config = { ...defaultConfig, ...existingConfig }; // note: not a deepmerge
     await browser.storage.sync.set(config);
 
-    // Register or update content.js for modifying 'document.referrer' property
+    // Register or update our content script handler
     const script = await browser.scripting.getRegisteredContentScripts();
     browser.scripting[script.length === 0 ? 'registerContentScripts' : 'updateContentScripts']([{
-        id: 'document_referrer_overwrite',
-        js: ['content.js'],
+        id: 'document_referrer_override',
         world: 'MAIN',
         runAt: 'document_start',
+        js: ['content_script.js'],
         matches: ['*://*/*'],
-        allFrames: false, // no point running for iframes due to 'ancestorOrigins' & other iframe shenanigans
+        allFrames: false, // No point running for iframes due to 'ancestorOrigins' & other iframe shenanigans
         excludeMatches: [
             ...config.excludedRequestDomains.map((domain) => `*://*.${domain}/*`),
             ...config.excludedInitiatorDomains.map((domain) => `*://*.${domain}/*`),
         ],
     }]);
 
-    // Register or update header modification rules
+    // Register or update our HTTP header modification rules
     browser.declarativeNetRequest.updateDynamicRules({
         removeRuleIds: [1, 2],
 

@@ -1,4 +1,4 @@
-// Note: origin here includes subdomains and not just the main domain
+// Note: origins here includes subdomains and not just the main domain
 if (document.referrer && new URL(document.referrer).origin !== window.origin) {
     const getEmptyStr = () => '';
 
