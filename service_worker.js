@@ -51,9 +51,8 @@ browser.runtime.onInstalled.addListener(async () => {
         js: ['content.js'],
         world: 'MAIN',
         runAt: 'document_start',
-        matches: ['<all_urls>'],
-        matchOriginAsFallback: true,
-        allFrames: true,
+        matches: ['*://*/*'],
+        allFrames: false, // no point running for iframes due to 'ancestorOrigins' & other iframe shenanigans
         excludeMatches: [
             ...config.excludedRequestDomains.map((domain) => `*://*.${domain}/*`),
             ...config.excludedInitiatorDomains.map((domain) => `*://*.${domain}/*`),

@@ -7,7 +7,7 @@
       "service_worker": "service_worker.js"
     },
     "host_permissions": [
-      "<all_urls>"
+      "*://*/*"
     ],
     "permissions": [
       "declarativeNetRequest",
