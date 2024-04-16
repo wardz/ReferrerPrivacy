@@ -1,20 +1,20 @@
 {
-    "name": "ReferrerPrivacy",
-    "version": "1.0.0",
-    "description": "Blocks referrers for most cross-origin (third party) requests.",
-    "manifest_version": 3,
-    "background": {
-      "service_worker": "service_worker.js"
-    },
-    "host_permissions": [
-      "*://*/*"
-    ],
-    "permissions": [
-      "declarativeNetRequest",
-      "scripting",
-      "storage"
-    ],
-    "icons": {
-      "128": "icons/icon128.png"
-    }
+  "manifest_version": 3,
+  "name": "ReferrerPrivacy",
+  "description": "Blocks referrer header for cross-origin GET requests.",
+  "version": "1.0.0",
+  "icons": {
+    "128": "icons/icon128.png"
+  },
+  "background": {
+    "service_worker": "service-worker.js"
+  },
+  "host_permissions": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  "permissions": [
+    "declarativeNetRequest",
+    "scripting"
+  ]
 }
