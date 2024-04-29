@@ -16,11 +16,13 @@ const excludedRequestDomains = [
     'codepen.io',
     'cdpn.io',
     'youtube.googleapis.com',
+    'static.playstation.com',
 ];
 
-browser.runtime.onInstalled.addListener(() => {
+browser.runtime.onInstalled.addListener(async () => {
     // Register or update our 'document.referrer' script handler
-    browser.scripting.registerContentScripts([{
+    const script = await browser.scripting.getRegisteredContentScripts();
+    browser.scripting[script.length === 0 ? 'registerContentScripts' : 'updateContentScripts']([{
         id: 'document_referrer_strip',
         world: 'MAIN',
         runAt: 'document_start',
