@@ -28,7 +28,7 @@ browser.runtime.onInstalled.addListener(async () => {
         runAt: 'document_start',
         js: ['content-script.js'],
         matches: ['http://*/*', 'https://*/*'], // <all_urls> would include wss etc
-        allFrames: false, // iframes shows origin host only, and impossible to fully strip JS-wise
+        allFrames: false, // iframes shows origin host only, and impossible to fully strip JS-wise anyways
         excludeMatches: [
             ...excludedRequestDomains.map((domain) => `*://*.${domain}/*`),
             ...excludedInitiatorDomains.map((domain) => `*://*.${domain}/*`),
@@ -56,7 +56,6 @@ browser.runtime.onInstalled.addListener(async () => {
                         'stylesheet',
                         'script',
                         'font',
-                        'xmlhttprequest',
                     ],
                     excludedInitiatorDomains,
                     excludedRequestDomains,
