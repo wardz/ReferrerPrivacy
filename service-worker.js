@@ -1,80 +1,97 @@
-const browser = this.browser || this.chrome;
+/* eslint-disable import/extensions */
+import { SetupStorage } from './config.js';
+import CreateUserScript from './user-script.js';
 
-// Exclude all requests on a specific domain
-const excludedInitiatorDomains = [
-    'messages.google.com',
-    'read.amazon.com',
-    'icloud.com',
-];
+/**
+ * Register or update our HTTP header modification rules.
+ */
+async function UpdateHeaderRules(config) {
+    const newRules = [];
 
-// Exclude a specific request
-const excludedRequestDomains = [
-    'bin.bnbstatic.com',
-    'redditstatic.com',
-    'cdn.embedly.com',
-    'static.crunchyroll.com',
-    'codepen.io',
-    'cdpn.io',
-    'youtube.googleapis.com',
-    'static.playstation.com',
-];
+    // https://developer.chrome.com/docs/extensions/reference/api/declarativeNetRequest
+    [config.globalRules, ...config.siteRules].forEach((rule, index) => {
+        newRules.push({
+            id: index + 1,
+            priority: index > 0 ? 2 : 1,
 
-browser.runtime.onInstalled.addListener(async () => {
-    // Register or update our 'document.referrer' script handler
-    const script = await browser.scripting.getRegisteredContentScripts();
-    browser.scripting[script.length === 0 ? 'registerContentScripts' : 'updateContentScripts']([{
-        id: 'document_referrer_strip',
-        world: 'MAIN',
-        runAt: 'document_start',
-        js: ['content-script.js'],
-        matches: ['http://*/*', 'https://*/*'], // <all_urls> would include wss etc
-        allFrames: false, // iframes shows origin host only, and impossible to fully strip JS-wise anyways
-        excludeMatches: [
-            ...excludedRequestDomains.map((domain) => `*://*.${domain}/*`),
-            ...excludedInitiatorDomains.map((domain) => `*://*.${domain}/*`),
-        ],
-    }]);
-
-    // Register or update our HTTP header filters
-    browser.declarativeNetRequest.updateDynamicRules({
-        removeRuleIds: [1, 2],
-
-        addRules: [
-            {
-                id: 1,
-                action: {
-                    type: 'modifyHeaders',
-                    requestHeaders: [{ header: 'referer', operation: 'remove' }],
-                },
-                condition: {
-                    domainType: 'thirdParty',
-                    requestMethods: ['get', 'head'],
-                    resourceTypes: [
-                        'main_frame',
-                        'sub_frame',
-                        'object',
-                        'stylesheet',
-                        'script',
-                        'font',
-                    ],
-                    excludedInitiatorDomains,
-                    excludedRequestDomains,
-                },
+            action: {
+                type: 'modifyHeaders',
+                requestHeaders: [{
+                    header: 'referer',
+                    operation: rule.setReferrer ? 'set' : 'remove',
+                    value: rule.setReferrer,
+                }],
             },
-            {
-                id: 2,
-                action: {
-                    type: 'modifyHeaders',
-                    requestHeaders: [{ header: 'origin', operation: 'remove' }],
-                },
-                condition: {
-                    domainType: 'thirdParty',
-                    requestMethods: ['get'],
-                    resourceTypes: ['font'], // font GET requests adds a origin header which is similar to referrer
-                    excludedInitiatorDomains,
-                    excludedRequestDomains,
-                },
+
+            condition: {
+                domainType: rule.domainType || config.globalRules.domainType,
+                requestMethods: rule.requestMethods || config.globalRules.requestMethods,
+                resourceTypes: rule.resourceTypes || config.globalRules.resourceTypes,
+                initiatorDomains: rule.initiatorDomains || null, // specifically null for globalRules
+                requestDomains: rule.requestDomains || null,
+
+                excludedRequestDomains: [
+                    ...config.globalRules.excludedRequestDomains, // Always ignore all global exceptions
+                    ...rule.excludedRequestDomains, // Exceptions tied to this rule's initiatorDomains
+                ],
+
+                excludedInitiatorDomains: index > 0 ? rule.excludedInitiatorDomains : [ // skip if not globalRules
+                    ...config.globalRules.excludedInitiatorDomains,
+                    // Site-specific rules is checked through initiatorDomains, ignore them for globalRules
+                    ...config.siteRules.map((obj) => obj.initiatorDomains.reduce((domain) => domain)),
+                ],
             },
-        ],
+        });
     });
+
+    // Strip font origin header if enabled
+    // Font GET requests adds a origin header that is equal to referrer
+    if (config.globalRules.stripFontOrigin) {
+        const length = newRules.length + 1;
+        newRules.forEach((rule, index) => {
+            const copy = structuredClone(rule); // reuse user's referrer rules for same domain exceptions
+            copy.id = length + index;
+            copy.action.requestHeaders[0].header = 'origin';
+            copy.condition.resourceTypes = ['font']; // make sure we only run for fonts this time
+            newRules.push(copy);
+        });
+    }
+
+    const oldRules = await chrome.declarativeNetRequest.getDynamicRules();
+    return chrome.declarativeNetRequest.updateDynamicRules({
+        removeRuleIds: oldRules.map((rule) => rule.id),
+        addRules: newRules,
+    });
+}
+
+/**
+ * Register or update our user script that handles modifying the 'document.referrer' value.
+ *
+ * Unlike content script, a user script allows us to pass the current config object to the world JS code
+ * while still having the code ran at the 'document_start' event. (chrome.scripting.executeScript() alternative is too slow)
+ */
+async function UpdateUserScript(config) {
+    const newScript = [{
+        id: 'referrer_privacy',
+        runAt: 'document_start',
+        world: 'MAIN',
+        matches: ['*://*/*'],
+        allFrames: false, // iframes will only show parent origin as referrer & is impossible to fully strip JS-wise anyways
+        js: [{ code: CreateUserScript(config) }],
+        excludeMatches: config.globalRules.excludedRequestDomains.map((domain) => `*://*.${domain}/*`),
+    }];
+
+    const oldScript = await chrome.userScripts.getScripts();
+    return chrome.userScripts[oldScript.length === 0 ? 'register' : 'update'](newScript);
+}
+
+/**
+ * Initialize the extension.
+ */
+chrome.runtime.onInstalled.addListener(async () => {
+    // try {
+    const config = await SetupStorage();
+    await UpdateHeaderRules(config);
+    await UpdateUserScript(config);
+    // catch (err) { console.log(err) };
 });
