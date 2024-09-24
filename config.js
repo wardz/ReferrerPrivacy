@@ -73,6 +73,7 @@ function mergeDeep(...objects) {
             const pVal = prev[key];
             const oVal = obj[key];
 
+            /* eslint-disable no-param-reassign */
             if (Array.isArray(pVal) && Array.isArray(oVal)) {
                 prev[key] = [...pVal, ...oVal].filter((element, index, array) => array.indexOf(element) === index);
             } else if (isObject(pVal) && isObject(oVal)) {
@@ -80,6 +81,7 @@ function mergeDeep(...objects) {
             } else {
                 prev[key] = oVal;
             }
+            /* eslint-enable no-param-reassign */
         });
 
         return prev;
