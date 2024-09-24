@@ -1,11 +1,11 @@
 /**
- * Userscript for stripping the JavaScript 'document.referrer' value on cross-origin page navigations.
+ * UserScript for modifying the JavaScript 'document.referrer' value on cross-origin page navigations.
  *
  * @param {object} config - The current loaded user configuration object.
  * @return string - A string containing the JavaScript code to inject.
  */
 export default function CreateUserScript(config) {
-    // TODO: domain exceptions can be pre-merged into 1 object if performance ever becomes an issue
+    // TODO: might be worth pre-merging all domain exceptions into 1 hashtable
 
     return `
         if (document.referrer && window.origin && window.origin !== 'null') {
@@ -17,11 +17,15 @@ export default function CreateUserScript(config) {
                 const requestMatch = (domain) => window.origin.endsWith('.' + domain) || window.origin.endsWith('://' + domain);
 
                 // Skip if initiator origin is globally excluded
-                if (!config.globalRules.excludedInitiatorDomains.some(initiatorMatch)) { // see also excludeMatches option
+                if (!config.globalRules.excludedInitiatorDomains.some(initiatorMatch)) { // see also userscript excludeMatches
+                    const rule = config.siteRules.find((rule) => rule.initiatorDomains.find(initiatorMatch));
+
                     // Skip if initiator origin is allowed to send referrer to current request's origin
-                    if (!config.siteRules.find((rule) => rule.initiatorDomains.find(initiatorMatch))?.excludedRequestDomains.some(requestMatch)) {
-                        // Set readonly 'document.referrer' to an empty string by overriding its getter
-                        Reflect.defineProperty(Document.prototype, 'referrer', { get: () => '' });
+                    if (!rule?.excludedRequestDomains?.some(requestMatch)) {
+                        const value = rule?.setReferrerValue || '';
+
+                        // Set readonly 'document.referrer' to a new value by overriding its getter
+                        Reflect.defineProperty(Document.prototype, 'referrer', { get: () => value });
                     }
                 }
             }

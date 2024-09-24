@@ -31,6 +31,7 @@ export const defaultConfig = {
             // Allow *.reddit.com to send referrers to *.redditstatic.com and others listed, but NOT vice versa
             initiatorDomains: ['reddit.com'],
             excludedRequestDomains: ['redditstatic.com', 'redditmedia.com', 'cdn.embedly.com'],
+            // setReferrerValue: 'example.com',
         },
         {
             // Allow *.sony.com to send referrers to *.playstation.com AND vice versa
@@ -44,9 +45,6 @@ export const defaultConfig = {
         {
             initiatorDomains: ['binance.com'],
             excludedRequestDomains: ['bnbstatic.com'],
-            // TODO: add support for these both to user-script & http rules
-            // +requestDomains: ['example.com'],
-            // +setReferrer: 'example.com',
         },
         {
             initiatorDomains: ['google.com'],

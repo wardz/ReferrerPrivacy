@@ -18,8 +18,8 @@ async function UpdateHeaderRules(config) {
                 type: 'modifyHeaders',
                 requestHeaders: [{
                     header: 'referer',
-                    operation: rule.setReferrer ? 'set' : 'remove',
-                    value: rule.setReferrer,
+                    operation: rule.setReferrerValue ? 'set' : 'remove',
+                    value: rule.setReferrerValue,
                 }],
             },
 
@@ -27,12 +27,11 @@ async function UpdateHeaderRules(config) {
                 domainType: rule.domainType || config.globalRules.domainType,
                 requestMethods: rule.requestMethods || config.globalRules.requestMethods,
                 resourceTypes: rule.resourceTypes || config.globalRules.resourceTypes,
-                initiatorDomains: rule.initiatorDomains || null, // specifically null for globalRules
-                requestDomains: rule.requestDomains || null,
+                initiatorDomains: rule.initiatorDomains || null,
 
                 excludedRequestDomains: [
-                    ...config.globalRules.excludedRequestDomains, // Always ignore all global exceptions
-                    ...rule.excludedRequestDomains, // Exceptions tied to this rule's initiatorDomains
+                    ...config.globalRules.excludedRequestDomains,
+                    ...rule.excludedRequestDomains || [],
                 ],
 
                 excludedInitiatorDomains: index > 0 ? rule.excludedInitiatorDomains : [ // skip if not globalRules
