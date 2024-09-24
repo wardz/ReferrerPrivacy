@@ -1,25 +1,29 @@
-export const defaultConfig = {
-    /* Global Default Rules */
+const defaultConfig = {
     globalRules: {
         // Allow all websites to send a referrer to *.codepen.io and *.jsfiddle.net
         excludedRequestDomains: ['codepen.io', 'cdpn.io', 'jsfiddle.net'],
+
         // Allow *.example.com to send a referrer to any URL it wants
         excludedInitiatorDomains: ['example.com'],
+
         // Strip cross-origin referrers only
         domainType: 'thirdParty',
+
         // Strip GET & HEAD request referrers only
         requestMethods: ['get', 'head'],
-        // Strip 'origin' header for font requests
+
+        // Strip 'origin' header for cross-origin font requests
         stripFontOrigin: true,
+
         // Strip 'referer' header for these resource types
         resourceTypes: [
             'main_frame', // top level requests from website
-            'sub_frame', // sub level requests from website (iframes, popups, about:*, data:*, blob:*)
+            'sub_frame', // sub level requests from website (iframes, popups, about:*, data:*, etc)
             'object', // embedded html objects
             'font', // font files
             'stylesheet', // css files
             'script', // js files
-            /* 'xmlhttprequest', // js CORS fetch requests, not recommended */
+            /* 'xmlhttprequest', // js fetch requests, not recommended enabling */
             /* 'image', // image files, causes a lot of breakage without adding siteRules exceptions */
             /* 'media', // audio & video files, causes a lot of breakage without adding siteRules exceptions */
         ],

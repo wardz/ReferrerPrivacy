@@ -1,5 +1,5 @@
 /* eslint-disable import/extensions */
-import { SetupStorage } from './config.js';
+import SetupStorage from './config.js';
 import CreateUserScript from './user-script.js';
 
 /**
@@ -36,7 +36,7 @@ async function UpdateHeaderRules(config) {
 
                 excludedInitiatorDomains: index > 0 ? rule.excludedInitiatorDomains : [ // skip if not globalRules
                     ...config.globalRules.excludedInitiatorDomains,
-                    // Site-specific rules is checked through initiatorDomains, ignore them for globalRules
+                    // Ignore all site-specific initiator rules for globalRules
                     ...config.siteRules.map((obj) => obj.initiatorDomains.reduce((domain) => domain)),
                 ],
             },
@@ -67,7 +67,7 @@ async function UpdateHeaderRules(config) {
  * Register or update our user script that handles modifying the 'document.referrer' value.
  *
  * Unlike content script, a user script allows us to pass the current config object to the world JS code
- * while still having the code ran at the 'document_start' event. (chrome.scripting.executeScript() alternative is too slow)
+ * while still having the code ran at the 'document_start' event. (The chrome.scripting.executeScript() alternative is too slow)
  */
 async function UpdateUserScript(config) {
     const newScript = [{
