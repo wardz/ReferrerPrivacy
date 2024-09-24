@@ -53,9 +53,38 @@ export const defaultConfig = {
     ],
 };
 
-export async function SetupStorage() {
+/**
+* Performs a deep merge of objects and returns new object. Does not modify
+* objects (immutable) and merges arrays via concatenation.
+* Source: https://stackoverflow.com/a/48218209
+*
+* @param {...object} objects - Objects to merge
+* @returns {object} New object with merged key/values
+*/
+function mergeDeep(...objects) {
+    const isObject = (obj) => obj && typeof obj === 'object';
+
+    return objects.reduce((prev, obj) => {
+        Object.keys(obj).forEach((key) => {
+            const pVal = prev[key];
+            const oVal = obj[key];
+
+            if (Array.isArray(pVal) && Array.isArray(oVal)) {
+                prev[key] = [...pVal, ...oVal].filter((element, index, array) => array.indexOf(element) === index);
+            } else if (isObject(pVal) && isObject(oVal)) {
+                prev[key] = mergeDeep(pVal, oVal);
+            } else {
+                prev[key] = oVal;
+            }
+        });
+
+        return prev;
+    }, {});
+}
+
+export default async function SetupStorage() {
     const existingConfig = await chrome.storage.local.get(null);
-    const config = defaultConfig; // { ...defaultConfig, ...existingConfig }; // TODO: deep merge
+    const config = mergeDeep(defaultConfig, existingConfig);
     await chrome.storage.local.set(config);
 
     return config;
