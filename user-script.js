@@ -25,7 +25,10 @@ export default function CreateUserScript(config) {
                         const value = rule?.setReferrerValue || '';
 
                         // Set readonly 'document.referrer' to a new value by overriding its getter
-                        Reflect.defineProperty(Document.prototype, 'referrer', { get: () => value });
+                        Reflect.defineProperty(Document.prototype, 'referrer', {
+                            ...Object.getOwnPropertyDescriptor(Document.prototype, 'referrer'),
+                            get: () => value
+                        });
                     }
                 }
             }
