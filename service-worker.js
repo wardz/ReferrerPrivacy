@@ -65,6 +65,7 @@ async function UpdateHeaderRules(config) {
 
 /**
  * Register or update our user script that handles modifying the 'document.referrer' value.
+ * Note: Requires that "Allow User Scripts" is enabled for the extension.
  *
  * Unlike content script, a user script allows us to pass the current loaded config object to the isolated world JS code
  * while still having the code ran at the 'document_start' event. (The chrome.scripting.executeScript() alternative is too slow)
