@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "ReferrerPrivacy",
-  "description": "Strips the referrer header from cross-origin GET requests & outbound link clicks.",
+  "description": "Strips the referer header from cross-origin GET requests and external link navigations.",
   "version": "1.0.0",
   "minimum_chrome_version": "126",
   "icons": {

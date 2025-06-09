@@ -1,14 +1,14 @@
 /* eslint-disable import/extensions */
-import SetupStorage from './config.js';
+import config from './config.js';
 import CreateUserScript from './user-script.js';
 
 /**
- * Register or update our HTTP header modification rules.
+ * Register or update HTTP header modification rules using chrome.declarativeNetRequest.
  */
 async function UpdateHeaderRules(config) {
     const newRules = [];
 
-    // https://developer.chrome.com/docs/extensions/reference/api/declarativeNetRequest
+    // Generate rules for global and site-specific configurations
     [config.globalRules, ...config.siteRules].forEach((rule, index) => {
         newRules.push({
             id: index + 1,
@@ -31,13 +31,13 @@ async function UpdateHeaderRules(config) {
 
                 excludedRequestDomains: [
                     ...config.globalRules.excludedRequestDomains,
-                    ...rule.excludedRequestDomains || [],
+                    ...(rule.excludedRequestDomains || []),
                 ],
 
                 excludedInitiatorDomains: index > 0 ? rule.excludedInitiatorDomains : [ // skip if not globalRules
                     ...config.globalRules.excludedInitiatorDomains,
                     // Ignore all site-specific initiator rules for globalRules
-                    ...config.siteRules.map((obj) => obj.initiatorDomains.reduce((domain) => domain)),
+                    ...config.siteRules.flatMap((rule) => rule.initiatorDomains)
                 ],
             },
         });
@@ -66,7 +66,7 @@ async function UpdateHeaderRules(config) {
 /**
  * Register or update our user script that handles modifying the 'document.referrer' value.
  *
- * Unlike content script, a user script allows us to pass the current config object to the world JS code
+ * Unlike content script, a user script allows us to pass the current loaded config object to the isolated world JS code
  * while still having the code ran at the 'document_start' event. (The chrome.scripting.executeScript() alternative is too slow)
  */
 async function UpdateUserScript(config) {
@@ -75,7 +75,7 @@ async function UpdateUserScript(config) {
         runAt: 'document_start',
         world: 'MAIN',
         matches: ['*://*/*'],
-        allFrames: false, // iframes will only show parent origin as referrer & is impossible to fully strip JS-wise anyways
+        allFrames: false, // iframes will only show parent origin as referrer, and is impossible to fully strip JS-wise anyways
         js: [{ code: CreateUserScript(config) }],
         excludeMatches: config.globalRules.excludedRequestDomains.map((domain) => `*://*.${domain}/*`),
     }];
@@ -89,7 +89,7 @@ async function UpdateUserScript(config) {
  */
 chrome.runtime.onInstalled.addListener(async () => {
     // try {
-    const config = await SetupStorage();
+    // const config = await SetupStorage();
     await UpdateHeaderRules(config);
     await UpdateUserScript(config);
     // catch (err) { console.log(err) };

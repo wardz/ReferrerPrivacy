@@ -1,28 +1,30 @@
 /**
  * UserScript for modifying the JavaScript 'document.referrer' value on cross-origin page navigations.
+ * Unlike content scripts, user scripts allow injecting JavaScript from a string, not just a file.
+ * This makes it possible for us to pass a reference to our 'config' object into isolated code (world: 'MAIN').
  *
- * @param {object} config - The current loaded user configuration object.
- * @return string - A string containing the JavaScript code to inject.
+ * @param {object} config - The user configuration object.
+ * @return string - A string containing the JavaScript code to inject into a page.
  */
 export default function CreateUserScript(config) {
-    // TODO: might be worth pre-merging all domain exceptions into 1 hashtable
+    const serializedConfig = JSON.stringify(config);
 
     return `
         if (document.referrer && window.origin && window.origin !== 'null') {
-            const initiatorOrigin = URL.parse(document.referrer)?.origin;
+            const initiator = URL.parse(document.referrer)?.hostname;
 
-            if (initiatorOrigin && initiatorOrigin !== window.origin) { // eTLD+1 for now
-                const config = ${JSON.stringify(config)};
-                const initiatorMatch = (domain) => initiatorOrigin.endsWith('.' + domain) || initiatorOrigin.endsWith('://' + domain);
-                const requestMatch = (domain) => window.origin.endsWith('.' + domain) || window.origin.endsWith('://' + domain);
+            if (initiator && initiator !== window.origin) { // eTLD+1 for now
+                const config = ${serializedConfig};
+                const initiatorMatch = (hostname) => initiator == hostname || initiator.endsWith('.' + hostname);
+                const requestMatch = (hostname) => window.location.hostname == hostname || window.location.hostname.endsWith('.' + hostname);
 
                 // Skip if initiator origin is globally excluded
-                if (!config.globalRules.excludedInitiatorDomains.some(initiatorMatch)) { // see also userscript excludeMatches
-                    const rule = config.siteRules.find((rule) => rule.initiatorDomains.find(initiatorMatch));
+                if (!config.globalRules.excludedInitiatorDomains.some(initiatorMatch)) { // See also userscript's excludeMatches
+                    const rule = config.siteRules.find((rule) => rule.initiatorDomains?.find(initiatorMatch));
 
                     // Skip if initiator origin is allowed to send referrer to current request's origin
-                    if (!rule?.excludedRequestDomains?.some(requestMatch)) {
-                        const value = rule?.setReferrerValue || '';
+                    if (rule && !(rule.excludedRequestDomains?.some(requestMatch))) {
+                        const value = rule.setReferrerValue || '';
 
                         // Set readonly 'document.referrer' to a new value by overriding its getter
                         Reflect.defineProperty(Document.prototype, 'referrer', {

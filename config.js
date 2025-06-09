@@ -1,10 +1,11 @@
-const defaultConfig = {
+export default {
+    /* Global website rules */
     globalRules: {
-        // Allow all websites to send a referrer to *.codepen.io and *.jsfiddle.net
+        // Allow all websites to send a referrer to e.g *.codepen.io
         excludedRequestDomains: ['codepen.io', 'cdpn.io', 'jsfiddle.net'],
 
-        // Allow *.example.com to send a referrer to any URL it wants
-        excludedInitiatorDomains: ['example.com'],
+        // Allow *.edx.org to send a referrer to any URL it wants
+        excludedInitiatorDomains: ['edx.org'],
 
         // Strip cross-origin referrers only
         domainType: 'thirdParty',
@@ -29,7 +30,7 @@ const defaultConfig = {
         ],
     },
 
-    /* Site specific rules */
+    /* Website specific rules */
     siteRules: [
         {
             // Allow *.reddit.com to send referrers to *.redditstatic.com and others listed, but NOT vice versa
@@ -57,41 +58,10 @@ const defaultConfig = {
     ],
 };
 
-/**
-* Performs a deep merge of objects and returns new object. Does not modify
-* objects (immutable) and merges arrays via concatenation.
-* Source: https://stackoverflow.com/a/48218209
-*
-* @param {...object} objects - Objects to merge
-* @returns {object} New object with merged key/values
-*/
-function mergeDeep(...objects) {
-    const isObject = (obj) => obj && typeof obj === 'object';
-
-    return objects.reduce((prev, obj) => {
-        Object.keys(obj).forEach((key) => {
-            const pVal = prev[key];
-            const oVal = obj[key];
-
-            /* eslint-disable no-param-reassign */
-            if (Array.isArray(pVal) && Array.isArray(oVal)) {
-                prev[key] = [...pVal, ...oVal].filter((element, index, array) => array.indexOf(element) === index);
-            } else if (isObject(pVal) && isObject(oVal)) {
-                prev[key] = mergeDeep(pVal, oVal);
-            } else {
-                prev[key] = oVal;
-            }
-            /* eslint-enable no-param-reassign */
-        });
-
-        return prev;
-    }, {});
-}
-
-export default async function SetupStorage() {
+/*export default async function SetupStorage() {
     const existingConfig = await chrome.storage.local.get(null);
     const config = mergeDeep(defaultConfig, existingConfig);
     await chrome.storage.local.set(config);
 
     return config;
-}
+}*/
